@@ -33,7 +33,13 @@ dependencies = [
   "pyarrow>=18",
   "pyiceberg>=0.7.1",
   "tifffile>=2025.1.10",
-  "zarr>=2.18.4,<3",
+  "zarr>=2.18.4,<4",
+]
+optional-dependencies.duckdb = [
+  "duckdb>=1.2.2",
+]
+optional-dependencies.ome-arrow = [
+  "ome-arrow>=0.0.4",
 ]
 urls.Documentation = "https://d33bs.github.io/iceberg-bioimage/"
 urls.Homepage = "https://github.com/d33bs/iceberg-bioimage"
@@ -62,6 +68,9 @@ notebooks = [
   "jupyterlab>=4.4.2",
   "jupyterlab-code-formatter>=3.0.2",
   "jupytext>=1.17.1",
+]
+ome-arrow = [
+  "ome-arrow>=0.0.4",
 ]
 
 [tool.setuptools]

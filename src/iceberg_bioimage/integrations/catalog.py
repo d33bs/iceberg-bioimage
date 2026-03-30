@@ -46,6 +46,9 @@ class SupportsScanCatalog(Protocol):
     def load_table(self, identifier: tuple[str, ...]) -> SupportsIcebergTable:
         """Load an existing Iceberg table."""
 
+    def list_tables(self, namespace: tuple[str, ...]) -> list[tuple[str, ...]]:
+        """List tables within a namespace."""
+
 
 @dataclass(frozen=True, slots=True)
 class CatalogScanOptions:
@@ -64,9 +67,24 @@ def load_catalog_table(
 ) -> SupportsIcebergTable:
     """Load a canonical metadata table from a catalog."""
 
-    resolved_catalog = _resolve_catalog(catalog)
+    resolved_catalog = _resolve_scan_catalog(catalog)
     identifier = (*_normalize_namespace(namespace), table_name)
     return resolved_catalog.load_table(identifier)
+
+
+def list_catalog_tables(
+    catalog: str | SupportsScanCatalog,
+    namespace: str | Sequence[str],
+) -> list[str]:
+    """List canonical metadata tables available in a catalog namespace."""
+
+    resolved_catalog = _resolve_scan_catalog(catalog)
+    resolved_namespace = _normalize_namespace(namespace)
+    table_names = {
+        identifier[-1]
+        for identifier in resolved_catalog.list_tables(resolved_namespace)
+    }
+    return sorted(table_names)
 
 
 def catalog_table_to_arrow(
@@ -148,3 +166,11 @@ def _normalize_columns(columns: Sequence[str] | None) -> Sequence[str] | None:
         return [columns]
 
     return columns
+
+
+def _resolve_scan_catalog(catalog: str | SupportsScanCatalog) -> SupportsScanCatalog:
+    resolved_catalog = _resolve_catalog(catalog)
+    if not hasattr(resolved_catalog, "list_tables"):
+        raise TypeError("Catalog must provide a list_tables(namespace) method.")
+
+    return resolved_catalog

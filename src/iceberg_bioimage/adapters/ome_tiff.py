@@ -26,9 +26,12 @@ class OMETiffAdapter(BaseAdapter):
         with tifffile.TiffFile(uri) as tif:
             for index, series in enumerate(tif.series):
                 array_path = None if len(tif.series) == 1 else f"series/{index}"
+                axes = getattr(series, "axes", "")
                 metadata = {
                     "series_index": index,
-                    "channel_count": self._channel_count(series.axes, series.shape),
+                    "axes": axes,
+                    "channel_count": self._channel_count(axes, series.shape),
+                    "ndim": len(series.shape),
                 }
                 image_assets.append(
                     ImageAsset(

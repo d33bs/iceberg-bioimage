@@ -146,10 +146,7 @@ def _register_source(
     source: MetadataSource,
 ) -> None:
     if isinstance(source, (str, Path)):
-        connection.execute(
-            f"CREATE OR REPLACE VIEW {name} AS SELECT * FROM read_parquet(?)",
-            [str(source)],
-        )
+        connection.from_parquet(str(source)).create_view(name, replace=True)
         return
 
     if isinstance(source, list):

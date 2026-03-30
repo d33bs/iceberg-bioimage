@@ -10,6 +10,7 @@ from iceberg_bioimage.integrations.catalog import (
     CatalogScanOptions,
     catalog_table_to_arrow,
     join_catalog_image_assets_with_profiles,
+    list_catalog_tables,
     load_catalog_table,
 )
 
@@ -66,6 +67,11 @@ class FakeCatalog:
     def load_table(self, identifier: tuple[str, ...]) -> FakeIcebergTable:
         return self.tables[identifier]
 
+    def list_tables(self, namespace: tuple[str, ...]) -> list[tuple[str, ...]]:
+        return [
+            identifier for identifier in self.tables if identifier[:-1] == namespace
+        ]
+
 
 def test_load_catalog_table() -> None:
     fake_table = FakeIcebergTable(pa.table({"dataset_id": ["ds-1"]}))
@@ -74,6 +80,21 @@ def test_load_catalog_table() -> None:
     loaded = load_catalog_table(catalog, "bioimage", "image_assets")
 
     assert loaded is fake_table
+
+
+def test_list_catalog_tables() -> None:
+    catalog = FakeCatalog(
+        {
+            ("bioimage", "image_assets"): FakeIcebergTable(pa.table({})),
+            ("bioimage", "chunk_index"): FakeIcebergTable(pa.table({})),
+            ("other", "image_assets"): FakeIcebergTable(pa.table({})),
+        }
+    )
+
+    assert list_catalog_tables(catalog, "bioimage") == [
+        "chunk_index",
+        "image_assets",
+    ]
 
 
 def test_catalog_table_to_arrow() -> None:

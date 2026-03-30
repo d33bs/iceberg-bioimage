@@ -51,6 +51,45 @@ class ScanResult:
 
 
 @dataclass(slots=True)
+class DatasetSummary:
+    """User-facing summary of a scanned dataset."""
+
+    source_uri: str
+    format_family: str
+    image_asset_count: int
+    chunked_asset_count: int
+    array_paths: list[str]
+    dtypes: list[str]
+    shapes: list[list[int]]
+    axes: list[str]
+    channel_counts: list[int]
+    storage_variants: list[str]
+    warnings: list[str] = field(default_factory=list)
+
+    def to_dict(self) -> dict[str, Any]:
+        """Return a JSON-serializable representation."""
+
+        return {
+            "source_uri": self.source_uri,
+            "format_family": self.format_family,
+            "image_asset_count": self.image_asset_count,
+            "chunked_asset_count": self.chunked_asset_count,
+            "array_paths": list(self.array_paths),
+            "dtypes": list(self.dtypes),
+            "shapes": [list(shape) for shape in self.shapes],
+            "axes": list(self.axes),
+            "channel_counts": list(self.channel_counts),
+            "storage_variants": list(self.storage_variants),
+            "warnings": list(self.warnings),
+        }
+
+    def to_json(self, **json_kwargs: Any) -> str:  # noqa: ANN401
+        """Serialize the dataset summary to JSON."""
+
+        return json.dumps(self.to_dict(), **json_kwargs)
+
+
+@dataclass(slots=True)
 class ContractValidationResult:
     """Serializable result for schema-level contract validation."""
 

@@ -23,4 +23,64 @@ keywords:
   - iceberg
   - zarr
   - ome-tiff
+  - duckdb
 license: BSD-3-Clause
+references:
+  - type: software
+    title: CytoTable
+    authors:
+      - given-names: David
+        family-names: Bunten
+        orcid: "https://orcid.org/0000-0001-6041-3665"
+      - given-names: Jenna
+        family-names: Tomkinson
+        orcid: "https://orcid.org/0000-0003-2676-5813"
+      - given-names: Erik
+        family-names: Serrano
+        orcid: "https://orcid.org/0000-0003-4188-9080"
+      - given-names: Michael
+        family-names: Lippincott
+        orcid: "https://orcid.org/0000-0002-8637-1448"
+      - given-names: Kenneth
+        family-names: Brewer
+        orcid: "https://orcid.org/0000-0003-4030-0254"
+      - given-names: Vincent
+        family-names: Rubinetti
+        orcid: "https://orcid.org/0000-0002-4655-3773"
+      - given-names: Faisal
+        family-names: Alquaddoomi
+        orcid: "https://orcid.org/0000-0003-4297-8747"
+      - given-names: Gregory
+        family-names: Way
+        orcid: "https://orcid.org/0000-0002-0503-9348"
+    repository-code: "https://github.com/cytomining/CytoTable"
+    url: "https://cytomining.github.io/CytoTable/"
+    notes: >-
+      CytoTable was reviewed as a related project while defining the boundary
+      between metadata publication in iceberg-bioimage and broader tabular
+      warehouse-construction workflows.
+  - type: software
+    title: ome-arrow
+    authors:
+      - given-names: Dave
+        family-names: Bunten
+        orcid: "https://orcid.org/0000-0001-6041-3665"
+      - given-names: Jenna
+        family-names: Tomkinson
+        orcid: "https://orcid.org/0000-0003-2676-5813"
+      - given-names: Michael
+        family-names: Lippincott
+        orcid: "https://orcid.org/0000-0002-8637-1448"
+      - given-names: Cameron
+        family-names: Mattson
+        orcid: "https://orcid.org/0009-0008-4969-779X"
+      - given-names: Gregory
+        family-names: Way
+        orcid: "https://orcid.org/0000-0002-0503-9348"
+    repository-code: "https://github.com/wayscience/ome-arrow"
+    notes: >-
+      OME-Arrow was reviewed as the Arrow-native image-value companion project.
+      Both projects target the Zarr ecosystem: the current ome-arrow stack
+      requires zarr>=3, while iceberg-bioimage supports zarr<4 with scanning
+      and metadata handling for Zarr v2 and v3 layouts; iceberg-bioimage does
+      not vendor or depend on ome-arrow.

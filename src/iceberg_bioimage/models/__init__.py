@@ -2,6 +2,7 @@
 
 from .scan_result import (
     ContractValidationResult,
+    DatasetSummary,
     ImageAsset,
     RegistrationResult,
     ScanResult,
@@ -9,6 +10,7 @@ from .scan_result import (
 
 __all__ = [
     "ContractValidationResult",
+    "DatasetSummary",
     "ImageAsset",
     "RegistrationResult",
     "ScanResult",

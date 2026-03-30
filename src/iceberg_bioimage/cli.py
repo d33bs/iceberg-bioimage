@@ -6,9 +6,17 @@ import argparse
 import json
 import sys
 
-from iceberg_bioimage.api import register_store, scan_store
+import pyarrow.parquet as pq
+
+from iceberg_bioimage.api import (
+    join_profiles_with_store,
+    register_store,
+    scan_store,
+    summarize_store,
+)
 from iceberg_bioimage.models.scan_result import (
     ContractValidationResult,
+    DatasetSummary,
     ScanResult,
 )
 from iceberg_bioimage.publishing.chunk_index import publish_chunk_index
@@ -32,6 +40,18 @@ def build_parser() -> argparse.ArgumentParser:
         help="Print the full serialized ScanResult instead of a summary.",
     )
     scan_parser.set_defaults(handler=_handle_scan)
+
+    summarize_parser = subparsers.add_parser(
+        "summarize",
+        help="Scan a dataset and print an aggregated summary.",
+    )
+    summarize_parser.add_argument("uri")
+    summarize_parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Print the full serialized summary instead of a text summary.",
+    )
+    summarize_parser.set_defaults(handler=_handle_summarize)
 
     register_parser = subparsers.add_parser(
         "register",
@@ -71,6 +91,20 @@ def build_parser() -> argparse.ArgumentParser:
     chunk_parser.add_argument("--table-name", default="chunk_index")
     chunk_parser.set_defaults(handler=_handle_publish_chunks)
 
+    join_parser = subparsers.add_parser(
+        "join-profiles",
+        help="Join a scanned image dataset to a profile table and write Parquet.",
+    )
+    join_parser.add_argument("uri")
+    join_parser.add_argument("profile_table")
+    join_parser.add_argument("--output", required=True)
+    join_parser.add_argument(
+        "--include-chunks",
+        action="store_true",
+        help="Include chunk_index rows in the join when available.",
+    )
+    join_parser.set_defaults(handler=_handle_join_profiles)
+
     return parser
 
 
@@ -81,7 +115,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     try:
         return int(args.handler(args))
-    except ValueError as exc:
+    except (RuntimeError, ValueError) as exc:
         print(f"Error: {exc}", file=sys.stderr)
         return 2
 
@@ -94,6 +128,17 @@ def _handle_scan(args: argparse.Namespace) -> int:
         return 0
 
     print(_scan_summary(scan_result))
+    return 0
+
+
+def _handle_summarize(args: argparse.Namespace) -> int:
+    summary = summarize_store(args.uri)
+
+    if args.json:
+        print(summary.to_json(indent=2, sort_keys=True))
+        return 0
+
+    print(_dataset_summary(summary))
     return 0
 
 
@@ -161,6 +206,29 @@ def _handle_publish_chunks(args: argparse.Namespace) -> int:
     return 0
 
 
+def _handle_join_profiles(args: argparse.Namespace) -> int:
+    joined = join_profiles_with_store(
+        args.uri,
+        args.profile_table,
+        include_chunks=args.include_chunks,
+    )
+    pq.write_table(joined, args.output)
+    print(
+        json.dumps(
+            {
+                "source_uri": args.uri,
+                "profile_table": args.profile_table,
+                "output": args.output,
+                "rows_written": joined.num_rows,
+                "columns": list(joined.column_names),
+            },
+            indent=2,
+            sort_keys=True,
+        )
+    )
+    return 0
+
+
 def _scan_summary(scan_result: ScanResult) -> str:
     lines = [
         f"source_uri: {scan_result.source_uri}",
@@ -204,6 +272,34 @@ def _contract_summary(result: ContractValidationResult) -> str:
     if result.warnings:
         lines.append("warnings:")
         lines.extend(f"- {warning}" for warning in result.warnings)
+
+    return "\n".join(lines)
+
+
+def _dataset_summary(summary: DatasetSummary) -> str:
+    lines = [
+        f"source_uri: {summary.source_uri}",
+        f"format_family: {summary.format_family}",
+        f"image_asset_count: {summary.image_asset_count}",
+        f"chunked_asset_count: {summary.chunked_asset_count}",
+        f"dtypes: {', '.join(summary.dtypes)}",
+    ]
+
+    if summary.axes:
+        lines.append(f"axes: {', '.join(summary.axes)}")
+    if summary.channel_counts:
+        lines.append(
+            "channel_counts: "
+            + ", ".join(str(value) for value in summary.channel_counts)
+        )
+    if summary.storage_variants:
+        lines.append("storage_variants: " + ", ".join(summary.storage_variants))
+    if summary.array_paths:
+        lines.append("array_paths:")
+        lines.extend(f"- {path}" for path in summary.array_paths)
+    if summary.warnings:
+        lines.append("warnings:")
+        lines.extend(f"- {warning}" for warning in summary.warnings)
 
     return "\n".join(lines)
 

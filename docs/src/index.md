@@ -14,5 +14,6 @@ maxdepth: 3
 ---
 python-api
 duckdb
+examples/metadata-workflow
 workflow
 ```

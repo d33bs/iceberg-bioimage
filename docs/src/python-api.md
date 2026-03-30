@@ -51,3 +51,10 @@
 .. automodule:: iceberg_bioimage.integrations.catalog
    :members:
 ```
+
+## Optional OME-Arrow Integration
+
+```{eval-rst}
+.. automodule:: iceberg_bioimage.integrations.ome_arrow
+   :members:
+```
