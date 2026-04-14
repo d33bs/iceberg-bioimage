@@ -20,7 +20,7 @@ jobs:
     steps:
       # release-drafter/release-drafter v6.1.0
       # yamllint disable rule:line-length
-      - uses: release-drafter/release-drafter@139054aeaa9adc52ab36ddf67437541f039b88e2
+      - uses: release-drafter/release-drafter@5de93583980a40bd78603b6dfdcda5b4df377b32
       # yamllint enable rule:line-length
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
