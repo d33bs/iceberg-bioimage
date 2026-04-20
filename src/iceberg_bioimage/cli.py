@@ -16,6 +16,8 @@ from iceberg_bioimage.api import (
     summarize_store,
 )
 from iceberg_bioimage.integrations.cytomining import (
+    DEFAULT_CHUNK_INDEX_TABLE,
+    DEFAULT_IMAGE_ASSETS_TABLE,
     export_catalog_to_cytomining_warehouse,
     export_profiles_to_cytomining_warehouse,
     export_store_to_cytomining_warehouse,
@@ -134,11 +136,11 @@ def build_parser() -> argparse.ArgumentParser:
     cytomining_catalog_parser.add_argument("--profiles")
     cytomining_catalog_parser.add_argument(
         "--image-assets-table",
-        default="image_assets",
+        default=DEFAULT_IMAGE_ASSETS_TABLE,
     )
     cytomining_catalog_parser.add_argument(
         "--chunk-index-table",
-        default="chunk_index",
+        default=DEFAULT_CHUNK_INDEX_TABLE,
     )
     cytomining_catalog_parser.add_argument(
         "--skip-chunks",
@@ -168,6 +170,14 @@ def build_parser() -> argparse.ArgumentParser:
     cytomining_profiles_parser.add_argument(
         "--table-name",
         default="profiles",
+    )
+    cytomining_profiles_parser.add_argument(
+        "--role",
+        default="profiles",
+        help=(
+            "Manifest role for the exported table (for example profiles or "
+            "quality_control)."
+        ),
     )
     cytomining_profiles_parser.add_argument(
         "--profile-dataset-id",
@@ -348,6 +358,7 @@ def _handle_export_cytomining_profiles(args: argparse.Namespace) -> int:
         args.profiles,
         args.warehouse_root,
         table_name=args.table_name,
+        role=args.role,
         profile_dataset_id=args.profile_dataset_id,
         mode=args.mode,
     )

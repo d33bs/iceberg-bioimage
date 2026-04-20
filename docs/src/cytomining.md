@@ -21,15 +21,16 @@ only by directory name.
 
 The Parquet warehouse root can contain:
 
-- `image_assets/`
-- `chunk_index/`
-- `joined_profiles/`
+- `images/image_assets/`
+- `images/chunk_index/`
+- `profiles/joined_profiles/`
 
-`image_assets` is the base metadata table.
+`images.image_assets` is the base metadata table.
 
-`chunk_index` is optional and only contains rows for chunked assets.
+`images.chunk_index` is optional and only contains rows for chunked assets.
 
-`joined_profiles` is optional and is written when a profile table is provided.
+`profiles.joined_profiles` is optional and is written when a profile table is
+provided.
 
 ## Export From Image Stores
 
@@ -136,17 +137,18 @@ iceberg-bioimage export-cytomining-profiles \
 iceberg-bioimage export-cytomining-profiles \
   --warehouse-root warehouse-root \
   --table-name cosmicqc_profiles \
+  --role quality_control \
   --profile-dataset-id ExampleHuman \
   data/cosmicqc_output.parquet
 ```
 
 After those steps, the same warehouse root can contain:
 
-- `image_assets/`
-- `chunk_index/`
-- `joined_profiles/`
-- `pycytominer_profiles/`
-- `cosmicqc_profiles/`
+- `images/image_assets/`
+- `images/chunk_index/`
+- `profiles/joined_profiles/`
+- `profiles/pycytominer_profiles/`
+- `quality_control/cosmicqc_profiles/`
 
 This keeps the image metadata and downstream Cytomining analysis outputs in one
 portable Parquet layout.

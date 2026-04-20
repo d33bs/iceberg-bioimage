@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import tomllib
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from json import JSONDecodeError
 from pathlib import Path
 
@@ -12,6 +12,7 @@ import pyarrow.dataset as ds
 from iceberg_bioimage.models.scan_result import (
     ContractValidationResult,
     ScanResult,
+    WarehouseTableManifestEntry,
     WarehouseValidationResult,
 )
 
@@ -199,7 +200,10 @@ def load_profile_column_aliases(path: str | Path) -> dict[str, tuple[str, ...]]:
 def validate_warehouse_manifest(path: str | Path) -> WarehouseValidationResult:
     """Validate a manifest-backed warehouse root."""
 
-    from iceberg_bioimage.integrations.cytomining import load_warehouse_manifest
+    from iceberg_bioimage.integrations.cytomining import (
+        _normalize_table_identifier,
+        load_warehouse_manifest,
+    )
 
     root = Path(path)
     result = WarehouseValidationResult(warehouse_root=str(root))
@@ -214,6 +218,11 @@ def validate_warehouse_manifest(path: str | Path) -> WarehouseValidationResult:
         result.errors.append(f"Invalid warehouse_manifest.json: {exc}")
         return result
 
+    if manifest.warehouse_spec_version is None:
+        result.errors.append(
+            "warehouse_manifest.json must declare warehouse_spec_version."
+        )
+
     seen_table_names: set[str] = set()
     for table in manifest.tables:
         if table.table_name in seen_table_names:
@@ -222,25 +231,49 @@ def validate_warehouse_manifest(path: str | Path) -> WarehouseValidationResult:
             )
             continue
         seen_table_names.add(table.table_name)
-
-        dataset_path = root / table.table_name
-        if not dataset_path.exists():
-            result.errors.append(
-                f"Manifest table path does not exist: {table.table_name}"
-            )
-            continue
-
-        if table.role in {"image_assets", "joined_profiles"} and not table.join_keys:
-            result.errors.append(
-                f"Manifest table {table.table_name} must declare join_keys."
-            )
-
-        if not table.columns:
-            result.warnings.append(
-                f"Manifest table {table.table_name} does not record columns."
-            )
+        _validate_warehouse_manifest_table(
+            root=root,
+            table=table,
+            result=result,
+            normalize_table_identifier=_normalize_table_identifier,
+        )
 
     return result
+
+
+def _validate_warehouse_manifest_table(
+    *,
+    root: Path,
+    table: WarehouseTableManifestEntry,
+    result: WarehouseValidationResult,
+    normalize_table_identifier: Callable[[str], tuple[str, tuple[str, ...]]],
+) -> None:
+    try:
+        _, table_parts = normalize_table_identifier(table.table_name)
+    except ValueError as exc:
+        result.errors.append(f"Invalid manifest table_name {table.table_name!r}: {exc}")
+        return
+
+    if table.role == "quality_control" and table_parts[0] != "quality_control":
+        result.errors.append(
+            "Manifest table with role quality_control must use the "
+            "quality_control namespace."
+        )
+
+    dataset_path = root.joinpath(*table_parts)
+    if not dataset_path.exists():
+        result.errors.append(f"Manifest table path does not exist: {table.table_name}")
+        return
+
+    if table.role in {"image_assets", "joined_profiles"} and not table.join_keys:
+        result.errors.append(
+            f"Manifest table {table.table_name} must declare join_keys."
+        )
+
+    if not table.columns:
+        result.warnings.append(
+            f"Manifest table {table.table_name} does not record columns."
+        )
 
 
 def _profile_contract_warnings(resolved_columns: dict[str, str | None]) -> list[str]:

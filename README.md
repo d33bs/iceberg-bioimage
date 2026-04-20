@@ -1,16 +1,30 @@
+<img src="docs/src/_static/iceberg-bioimage-logo.png" alt="iceberg-bioimage logo" width="150">
+
 # iceberg-bioimage
 
-`iceberg-bioimage` is a format-agnostic Python package for cataloging bioimaging data with Apache Iceberg and exporting Cytomining-compatible warehouse layouts.
+`iceberg-bioimage` is a Python package for cataloging bioimaging metadata with Apache Iceberg and exporting Cytomining-compatible warehouse layouts.
 
-Core idea:
+It is designed for teams that want:
 
 - Iceberg is the control plane for cataloging, schemas, joins, and snapshots.
 - Cytomining-compatible Parquet warehouses are a first-class export target.
-- Zarr and OME-TIFF remain the data plane.
-- Adapters normalize each format into a pure-Python `ScanResult`.
-- Execution stays in external tools such as DuckDB, xarray, and tifffile.
+- Flexible image data planes, including Zarr, OME-TIFF, and OME-Arrow-centered workflows.
+- Adapters that normalize source formats into a single `ScanResult` model.
+- Integration with external execution/query tools such as DuckDB, xarray, and tifffile.
 
-## Package layout
+## Key capabilities
+
+- Scan supported source stores, including Zarr and OME-TIFF, into canonical `ScanResult` objects.
+- Summarize scanned datasets into user-facing `DatasetSummary` objects.
+- Publish `image_assets` and `chunk_index` metadata tables with PyIceberg.
+- Ingest one or more datasets into Cytotable-compatible Iceberg warehouses.
+- Export new or existing datasets into Cytomining-compatible Parquet warehouses.
+- Validate profile tables against the microscopy join contract.
+- Join scanned image metadata to profile tables through a simple top-level API.
+- Query canonical metadata through optional DuckDB helpers.
+- Load catalog-backed metadata tables into Arrow for downstream joins.
+
+## Project layout
 
 ```text
 src/iceberg_bioimage/
@@ -24,26 +38,26 @@ src/iceberg_bioimage/
   validation/
 ```
 
-## Minimal dependencies
+## Dependencies
 
-- `pyarrow`
-- `pyiceberg`
-- `tifffile`
-- `zarr`
+Core runtime dependencies include:
+
+- `pyarrow` for Arrow/Parquet table operations
+- `pyiceberg` for catalog/table publishing
+- `tifffile` for OME-TIFF metadata scanning when OME-TIFF sources are used
+- `zarr` for Zarr metadata scanning
 
 Optional integration groups:
 
 - `duckdb` for query helpers and examples
 - `ome-arrow` for Arrow-native tabular image payloads and lazy image access
 
-## Start Here
+## Getting started
 
 - If you want a catalog-free first run, start with Cytomining export:
   `iceberg-bioimage export-cytomining --warehouse-root warehouse-root data/experiment.zarr`
 - If you want Iceberg-backed publishing, configure a PyIceberg catalog first.
-- For step-by-step setup, see:
-  - `docs/src/getting-started.md`
-  - `docs/src/catalog-setup.md`
+- For step-by-step setup, see `docs/src/getting-started.md` and `docs/src/catalog-setup.md`.
 
 ## Zarr support
 
@@ -185,20 +199,21 @@ print(result.to_dict())
 
 This writes one or more of:
 
-- `image_assets/`
-- `chunk_index/`
-- `joined_profiles/`
+- `images/image_assets/`
+- `images/chunk_index/`
+- `profiles/joined_profiles/`
 
 It can also append downstream Cytomining tables into the same warehouse root,
-for example:
+using namespaces that match table semantics, for example:
 
-- `pycytominer_profiles/`
-- `cosmicqc_profiles/`
+- `profiles/pycytominer_profiles/`
+- `quality_control/cosmicqc_profiles/`
 
 ## OME-Arrow helpers
 
 OME-Arrow is available as an optional forward-facing integration for tabular
 image payloads stored in Arrow-compatible formats.
+Projects may also choose an OME-Arrow-first workflow for source image handling.
 
 ```python
 from iceberg_bioimage import create_ome_arrow, scan_ome_arrow
@@ -248,17 +263,13 @@ joined = join_catalog_image_assets_with_profiles(
 )
 ```
 
-## Current scope
+## Documentation
 
-- Scan Zarr and OME-TIFF stores into canonical `ScanResult` objects
-- Summarize scanned datasets into user-facing `DatasetSummary` objects
-- Publish `image_assets` and `chunk_index` metadata tables with PyIceberg
-- Ingest one or more existing datasets into Cytotable-compatible Iceberg warehouses
-- Export new or existing datasets into Cytomining-compatible Parquet warehouses
-- Validate profile tables against the microscopy join contract
-- Join scanned image metadata to profile tables through a simple top-level API
-- Query canonical metadata through optional DuckDB helpers
-- Load catalog-backed metadata tables into Arrow for downstream joins
+- `docs/src/getting-started.md` for first-time setup
+- `docs/src/catalog-setup.md` for catalog configuration
+- `docs/src/cytomining.md` for warehouse export workflows
+- `docs/src/warehouse-spec.md` for the warehouse interoperability specification
+- `docs/src/workflow.md` for CLI-driven end-to-end examples
 
 ## Troubleshooting
 
@@ -270,7 +281,7 @@ joined = join_catalog_image_assets_with_profiles(
 - `Missing table: ...` for catalog-backed paths:
   verify catalog configuration, namespace, and table names.
 
-## Design note
+## Architecture note
 
 The package focuses on metadata scanning, publishing, Cytomining warehouse
 export, validation, and joins. OME-Arrow remains the place for Arrow-native

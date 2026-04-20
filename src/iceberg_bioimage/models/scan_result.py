@@ -258,6 +258,7 @@ class WarehouseManifest:
     """Serializable manifest describing tables stored in a warehouse root."""
 
     warehouse_root: str
+    warehouse_spec_version: str | None = None
     tables: list[WarehouseTableManifestEntry] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
@@ -265,6 +266,7 @@ class WarehouseManifest:
 
         return {
             "warehouse_root": self.warehouse_root,
+            "warehouse_spec_version": self.warehouse_spec_version,
             "tables": [table.to_dict() for table in self.tables],
         }
 

@@ -17,6 +17,7 @@ catalog-setup
 python-api
 duckdb
 cytomining
+warehouse-spec
 examples/metadata-workflow
 examples/basic-workflow
 workflow

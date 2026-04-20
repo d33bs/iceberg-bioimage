@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 from iceberg_bioimage.validation.contracts import (
@@ -76,3 +77,89 @@ def test_validate_warehouse_manifest_missing_manifest(tmp_path: Path) -> None:
 
     assert result.is_valid is False
     assert result.errors == ["warehouse_manifest.json is missing."]
+
+
+def test_validate_warehouse_manifest_rejects_malformed_table_name(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "profiles" / "joined_profiles").mkdir(parents=True)
+    (tmp_path / "warehouse_manifest.json").write_text(
+        json.dumps(
+            {
+                "warehouse_root": str(tmp_path),
+                "warehouse_spec_version": "1.0.0",
+                "tables": [
+                    {
+                        "table_name": "profiles..joined_profiles",
+                        "role": "joined_profiles",
+                        "format": "parquet",
+                        "join_keys": ["dataset_id", "image_id"],
+                        "columns": ["dataset_id", "image_id"],
+                    }
+                ],
+            }
+        )
+    )
+
+    result = validate_warehouse_manifest(tmp_path)
+
+    assert result.is_valid is False
+    assert any("Invalid manifest table_name" in error for error in result.errors)
+
+
+def test_validate_warehouse_manifest_requires_spec_version(tmp_path: Path) -> None:
+    (tmp_path / "profiles" / "joined_profiles").mkdir(parents=True)
+    (tmp_path / "warehouse_manifest.json").write_text(
+        json.dumps(
+            {
+                "warehouse_root": str(tmp_path),
+                "tables": [
+                    {
+                        "table_name": "profiles.joined_profiles",
+                        "role": "joined_profiles",
+                        "format": "parquet",
+                        "join_keys": ["dataset_id", "image_id"],
+                        "columns": ["dataset_id", "image_id"],
+                    }
+                ],
+            }
+        )
+    )
+
+    result = validate_warehouse_manifest(tmp_path)
+
+    assert result.is_valid is False
+    assert (
+        "warehouse_manifest.json must declare warehouse_spec_version." in result.errors
+    )
+
+
+def test_validate_warehouse_manifest_requires_quality_control_namespace(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "profiles" / "cosmicqc_profiles").mkdir(parents=True)
+    (tmp_path / "warehouse_manifest.json").write_text(
+        json.dumps(
+            {
+                "warehouse_root": str(tmp_path),
+                "warehouse_spec_version": "1.0.0",
+                "tables": [
+                    {
+                        "table_name": "profiles.cosmicqc_profiles",
+                        "role": "quality_control",
+                        "format": "parquet",
+                        "join_keys": ["dataset_id", "image_id"],
+                        "columns": ["dataset_id", "image_id", "qc_pass"],
+                    }
+                ],
+            }
+        )
+    )
+
+    result = validate_warehouse_manifest(tmp_path)
+
+    assert result.is_valid is False
+    assert (
+        "Manifest table with role quality_control must use the quality_control "
+        "namespace." in result.errors
+    )

@@ -63,7 +63,11 @@ html_theme_options = {
             "icon": "fa-brands fa-github",
         },
     ],
-    "logo": {"text": "iceberg-bioimage"},
+    "logo": {
+        "text": "iceberg-bioimage",
+        "image_light": "_static/iceberg-bioimage-logo.png",
+        "image_dark": "_static/iceberg-bioimage-logo.png",
+    },
     "use_edit_page_button": False,
     "show_toc_level": 1,
     "navbar_align": "left",
