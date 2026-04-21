@@ -1,4 +1,4 @@
-<img src="https://raw.githubusercontent.com/d33bs/iceberg-bioimage/main/docs/src/_static/iceberg-bioimage-logo.png" alt="iceberg-bioimage logo" width="150">
+<img src="https://raw.githubusercontent.com/wayscience/iceberg-bioimage/main/docs/src/_static/iceberg-bioimage-logo.png" alt="iceberg-bioimage logo" width="150">
 
 # iceberg-bioimage
 
