@@ -7,10 +7,23 @@ message: >-
   If you use this software, please cite it using the
   metadata from the CITATION.cff file.
 type: software
+doi: "10.5281/zenodo.19672521"
 authors:
   - given-names: Dave
     family-names: Bunten
     orcid: "https://orcid.org/0000-0001-6041-3665"
+  - given-names: Jenna
+    family-names: Tomkinson
+    orcid: "https://orcid.org/0000-0003-2676-5813"
+  - given-names: Michael
+    family-names: Lippincott
+    orcid: "https://orcid.org/0000-0002-8637-1448"
+  - given-names: Cameron
+    family-names: Mattson
+    orcid: "https://orcid.org/0009-0008-4969-779X"
+  - given-names: Gregory
+    family-names: Way
+    orcid: "https://orcid.org/0000-0002-0503-9348"
 url: "https://github.com/d33bs/iceberg-bioimage"
 repository-code: "https://github.com/d33bs/iceberg-bioimage"
 repository-artifact: "https://pypi.org/project/iceberg-bioimage/"
