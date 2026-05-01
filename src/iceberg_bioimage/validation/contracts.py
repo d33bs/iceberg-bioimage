@@ -52,6 +52,8 @@ MICROSCOPY_PROFILE_COLUMN_ALIASES: dict[str, tuple[str, ...]] = {
         "Metadata_site",
     ),
 }
+SUPPORTED_WAREHOUSE_SPEC_MAJOR = 1
+SEMVER_PART_COUNT = 3
 
 
 def validate_scan_result(scan_result: ScanResult) -> list[str]:
@@ -222,6 +224,11 @@ def validate_warehouse_manifest(path: str | Path) -> WarehouseValidationResult:
         result.errors.append(
             "warehouse_manifest.json must declare warehouse_spec_version."
         )
+    else:
+        _validate_warehouse_spec_version(
+            manifest.warehouse_spec_version,
+            result=result,
+        )
 
     seen_table_names: set[str] = set()
     for table in manifest.tables:
@@ -255,14 +262,18 @@ def _validate_warehouse_manifest_table(
         return
 
     if table.role == "quality_control" and table_parts[0] != "quality_control":
-        result.errors.append(
-            "Manifest table with role quality_control must use the "
-            "quality_control namespace."
-        )
+        result.errors.append(_role_namespace_error(table.role, "quality_control"))
+
+    _validate_role_namespace(role=table.role, namespace=table_parts[0], result=result)
 
     dataset_path = root.joinpath(*table_parts)
     if not dataset_path.exists():
         result.errors.append(f"Manifest table path does not exist: {table.table_name}")
+        return
+    if not dataset_path.is_dir():
+        result.errors.append(
+            f"Manifest table path is not a directory: {table.table_name}"
+        )
         return
 
     if table.role in {"image_assets", "joined_profiles"} and not table.join_keys:
@@ -274,6 +285,56 @@ def _validate_warehouse_manifest_table(
         result.warnings.append(
             f"Manifest table {table.table_name} does not record columns."
         )
+
+
+def _validate_warehouse_spec_version(
+    warehouse_spec_version: str,
+    *,
+    result: WarehouseValidationResult,
+) -> None:
+    parts = warehouse_spec_version.split(".")
+    if len(parts) != SEMVER_PART_COUNT or not all(part.isdigit() for part in parts):
+        result.errors.append(
+            "warehouse_spec_version must use semantic versioning MAJOR.MINOR.PATCH."
+        )
+        return
+
+    major = int(parts[0])
+    if major != SUPPORTED_WAREHOUSE_SPEC_MAJOR:
+        result.errors.append(
+            "Unsupported warehouse_spec_version major "
+            f"{major}; supported major is {SUPPORTED_WAREHOUSE_SPEC_MAJOR}."
+        )
+
+
+def _validate_role_namespace(
+    *,
+    role: str,
+    namespace: str,
+    result: WarehouseValidationResult,
+) -> None:
+    expected_namespaces_by_role = {
+        "profiles": {"profiles"},
+        "joined_profiles": {"profiles"},
+        "quality_control": {"quality_control"},
+        "image_assets": {"images"},
+        "chunk_index": {"images"},
+        "image_crops": {"images"},
+        "source_images": {"images"},
+    }
+    expected_namespaces = expected_namespaces_by_role.get(role)
+    if expected_namespaces is None:
+        return
+    if namespace not in expected_namespaces:
+        result.errors.append(
+            _role_namespace_error(role, ", ".join(sorted(expected_namespaces)))
+        )
+
+
+def _role_namespace_error(role: str, expected_namespace: str) -> str:
+    return (
+        f"Manifest table with role {role} must use the {expected_namespace} namespace."
+    )
 
 
 def _profile_contract_warnings(resolved_columns: dict[str, str | None]) -> list[str]:

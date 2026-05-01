@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import subprocess
 import sys
 from pathlib import Path
@@ -65,6 +66,43 @@ def test_validate_contract_cli(tmp_path: Path) -> None:
 
     assert "is_valid: True" in output.stdout
     assert "missing_recommended_columns:" in output.stdout
+
+
+def test_validate_warehouse_cli(tmp_path: Path) -> None:
+    (tmp_path / "images" / "image_assets").mkdir(parents=True)
+    (tmp_path / "warehouse_manifest.json").write_text(
+        json.dumps(
+            {
+                "warehouse_root": str(tmp_path),
+                "warehouse_spec_version": "1.0.0",
+                "tables": [
+                    {
+                        "table_name": "images.image_assets",
+                        "role": "image_assets",
+                        "format": "parquet",
+                        "join_keys": ["dataset_id", "image_id"],
+                        "columns": ["dataset_id", "image_id"],
+                    }
+                ],
+            }
+        )
+    )
+
+    output = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "iceberg_bioimage.cli",
+            "validate-warehouse",
+            str(tmp_path),
+        ],
+        capture_output=True,
+        text=True,
+        check=True,
+        timeout=30,
+    )
+
+    assert "is_valid: True" in output.stdout
 
 
 def test_summarize_cli(monkeypatch: MonkeyPatch, capsys: CaptureFixture[str]) -> None:

@@ -163,3 +163,96 @@ def test_validate_warehouse_manifest_requires_quality_control_namespace(
         "Manifest table with role quality_control must use the quality_control "
         "namespace." in result.errors
     )
+
+
+def test_validate_warehouse_manifest_rejects_invalid_spec_semver(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "profiles" / "joined_profiles").mkdir(parents=True)
+    (tmp_path / "warehouse_manifest.json").write_text(
+        json.dumps(
+            {
+                "warehouse_root": str(tmp_path),
+                "warehouse_spec_version": "v1",
+                "tables": [
+                    {
+                        "table_name": "profiles.joined_profiles",
+                        "role": "joined_profiles",
+                        "format": "parquet",
+                        "join_keys": ["dataset_id", "image_id"],
+                        "columns": ["dataset_id", "image_id"],
+                    }
+                ],
+            }
+        )
+    )
+
+    result = validate_warehouse_manifest(tmp_path)
+
+    assert result.is_valid is False
+    assert (
+        "warehouse_spec_version must use semantic versioning MAJOR.MINOR.PATCH."
+        in result.errors
+    )
+
+
+def test_validate_warehouse_manifest_rejects_unsupported_spec_major(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "profiles" / "joined_profiles").mkdir(parents=True)
+    (tmp_path / "warehouse_manifest.json").write_text(
+        json.dumps(
+            {
+                "warehouse_root": str(tmp_path),
+                "warehouse_spec_version": "2.0.0",
+                "tables": [
+                    {
+                        "table_name": "profiles.joined_profiles",
+                        "role": "joined_profiles",
+                        "format": "parquet",
+                        "join_keys": ["dataset_id", "image_id"],
+                        "columns": ["dataset_id", "image_id"],
+                    }
+                ],
+            }
+        )
+    )
+
+    result = validate_warehouse_manifest(tmp_path)
+
+    assert result.is_valid is False
+    assert (
+        "Unsupported warehouse_spec_version major 2; supported major is 1."
+        in result.errors
+    )
+
+
+def test_validate_warehouse_manifest_requires_image_namespace_for_image_assets(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "profiles" / "image_assets").mkdir(parents=True)
+    (tmp_path / "warehouse_manifest.json").write_text(
+        json.dumps(
+            {
+                "warehouse_root": str(tmp_path),
+                "warehouse_spec_version": "1.0.0",
+                "tables": [
+                    {
+                        "table_name": "profiles.image_assets",
+                        "role": "image_assets",
+                        "format": "parquet",
+                        "join_keys": ["dataset_id", "image_id"],
+                        "columns": ["dataset_id", "image_id"],
+                    }
+                ],
+            }
+        )
+    )
+
+    result = validate_warehouse_manifest(tmp_path)
+
+    assert result.is_valid is False
+    assert (
+        "Manifest table with role image_assets must use the images namespace."
+        in result.errors
+    )

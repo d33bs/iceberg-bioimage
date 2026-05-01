@@ -26,9 +26,13 @@ from iceberg_bioimage.models.scan_result import (
     ContractValidationResult,
     DatasetSummary,
     ScanResult,
+    WarehouseValidationResult,
 )
 from iceberg_bioimage.publishing.chunk_index import publish_chunk_index
-from iceberg_bioimage.validation.contracts import validate_microscopy_profile_table
+from iceberg_bioimage.validation.contracts import (
+    validate_microscopy_profile_table,
+    validate_warehouse_manifest,
+)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -205,6 +209,18 @@ def build_parser() -> argparse.ArgumentParser:
     )
     validate_parser.set_defaults(handler=_handle_validate_contract)
 
+    validate_warehouse_parser = subparsers.add_parser(
+        "validate-warehouse",
+        help="Validate a warehouse root against manifest/layout conformance checks.",
+    )
+    validate_warehouse_parser.add_argument("warehouse_root")
+    validate_warehouse_parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Print the full validation result as JSON.",
+    )
+    validate_warehouse_parser.set_defaults(handler=_handle_validate_warehouse)
+
     chunk_parser = subparsers.add_parser(
         "publish-chunks",
         help="Publish derived chunk metadata into an Iceberg chunk_index table.",
@@ -309,6 +325,17 @@ def _handle_validate_contract(args: argparse.Namespace) -> int:
         print(result.to_json(indent=2, sort_keys=True))
     else:
         print(_contract_summary(result))
+
+    return 0 if result.is_valid else 1
+
+
+def _handle_validate_warehouse(args: argparse.Namespace) -> int:
+    result = validate_warehouse_manifest(args.warehouse_root)
+
+    if args.json:
+        print(result.to_json(indent=2, sort_keys=True))
+    else:
+        print(_warehouse_validation_summary(result))
 
     return 0 if result.is_valid else 1
 
@@ -486,6 +513,20 @@ def _dataset_summary(summary: DatasetSummary) -> str:
         lines.append("warnings:")
         lines.extend(f"- {warning}" for warning in summary.warnings)
 
+    return "\n".join(lines)
+
+
+def _warehouse_validation_summary(result: WarehouseValidationResult) -> str:
+    lines = [
+        f"warehouse_root: {result.warehouse_root}",
+        f"is_valid: {result.is_valid}",
+    ]
+    if result.errors:
+        lines.append("errors:")
+        lines.extend(f"- {error}" for error in result.errors)
+    if result.warnings:
+        lines.append("warnings:")
+        lines.extend(f"- {warning}" for warning in result.warnings)
     return "\n".join(lines)
 
 

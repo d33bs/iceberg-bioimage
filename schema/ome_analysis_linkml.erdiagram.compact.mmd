@@ -1,0 +1,101 @@
+erDiagram
+BindingStorage {
+
+}
+BindingTableIceberg {
+
+}
+KeyJoin {
+
+}
+ManifestWarehouse {
+
+}
+MixinExternalReference {
+
+}
+MixinProvenance {
+
+}
+ModuleAnalysis {
+
+}
+RecordProvenance {
+
+}
+SchemaColumn {
+
+}
+TableAnalyzedData {
+
+}
+TableChunkIndex {
+
+}
+TableDerivedMeasurement {
+
+}
+TableEmbedding {
+
+}
+TableImage {
+
+}
+TableImageAssets {
+
+}
+TableImageCrops {
+
+}
+TableImageLabel {
+
+}
+TableQualityControl {
+
+}
+TableSourceImages {
+
+}
+TableWarehouse {
+
+}
+
+ManifestWarehouse ||--}o TableWarehouse : "tables"
+MixinProvenance ||--|o RecordProvenance : "provenance"
+ModuleAnalysis ||--}o RecordProvenance : "provenance_records"
+ModuleAnalysis ||--}o TableAnalyzedData : "analyzed_tables"
+ModuleAnalysis ||--}o TableImageLabel : "image_label_tables"
+ModuleAnalysis ||--}o TableQualityControl : "quality_control_tables"
+TableAnalyzedData ||--|o BindingStorage : "storage_binding"
+TableAnalyzedData ||--|o RecordProvenance : "provenance"
+TableAnalyzedData ||--}o KeyJoin : "join_keys"
+TableAnalyzedData ||--}o SchemaColumn : "columns"
+TableChunkIndex ||--}o KeyJoin : "join_keys"
+TableChunkIndex ||--}o SchemaColumn : "columns"
+TableDerivedMeasurement ||--|o BindingStorage : "storage_binding"
+TableDerivedMeasurement ||--|o RecordProvenance : "provenance"
+TableDerivedMeasurement ||--}o KeyJoin : "join_keys"
+TableDerivedMeasurement ||--}o SchemaColumn : "columns"
+TableEmbedding ||--|o BindingStorage : "storage_binding"
+TableEmbedding ||--|o RecordProvenance : "provenance"
+TableEmbedding ||--}o KeyJoin : "join_keys"
+TableEmbedding ||--}o SchemaColumn : "columns"
+TableImage ||--}o KeyJoin : "join_keys"
+TableImage ||--}o SchemaColumn : "columns"
+TableImageAssets ||--}o KeyJoin : "join_keys"
+TableImageAssets ||--}o SchemaColumn : "columns"
+TableImageCrops ||--}o KeyJoin : "join_keys"
+TableImageCrops ||--}o SchemaColumn : "columns"
+TableImageLabel ||--|o BindingStorage : "storage_binding"
+TableImageLabel ||--|o TableSourceImages : "source_image_table"
+TableImageLabel ||--}o KeyJoin : "join_keys"
+TableImageLabel ||--}o SchemaColumn : "columns"
+TableQualityControl ||--|o BindingStorage : "storage_binding"
+TableQualityControl ||--|o RecordProvenance : "provenance"
+TableQualityControl ||--}o KeyJoin : "join_keys"
+TableQualityControl ||--}o SchemaColumn : "columns"
+TableSourceImages ||--|o TableImageLabel : "label_table"
+TableSourceImages ||--}o KeyJoin : "join_keys"
+TableSourceImages ||--}o SchemaColumn : "columns"
+TableWarehouse ||--}o KeyJoin : "join_keys"
+TableWarehouse ||--}o SchemaColumn : "columns"

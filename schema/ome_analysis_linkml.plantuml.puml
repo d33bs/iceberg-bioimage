@@ -1,0 +1,65 @@
+@startuml
+top to bottom direction
+skinparam linetype ortho
+skinparam classAttributeIconSize 0
+hide methods
+hide stereotypes
+
+package "Core Warehouse" {
+class Warehouse
+class WarehouseManifest
+class WarehouseCatalog
+class Namespace
+class CatalogView
+class WarehouseTable
+class WarehouseImage
+}
+
+package "Images Namespace" {
+package "Image Formats" {
+class ImageOMEZarr
+class ImageOMETiff
+class ImageTIFF
+}
+package "Image Tables" {
+class TableImage
+class TableSourceImages
+class TableImageCrops
+class TableImageLabel
+}
+}
+
+package "Analysis Tables" {
+class TableAnalyze
+class TableDerivedMeasurement
+class TableQualityControl
+class TableEmbedding
+}
+
+Warehouse --> WarehouseManifest : "manifest"
+Warehouse --> WarehouseCatalog : "catalogs"
+WarehouseCatalog --> Namespace : "namespaces"
+WarehouseCatalog --> CatalogView : "views"
+CatalogView --> WarehouseTable : "source_tables"
+WarehouseManifest --> WarehouseTable : "tables"
+WarehouseManifest --> WarehouseImage : "manifest_images"
+TableImage --|> WarehouseTable
+TableAnalyze --|> WarehouseTable
+TableSourceImages --|> TableImage
+TableImageCrops --|> TableImage
+TableImageLabel --|> TableImage
+TableDerivedMeasurement --|> TableAnalyze
+TableQualityControl --|> TableAnalyze
+TableEmbedding --|> TableAnalyze
+ImageOMEZarr --|> WarehouseImage
+ImageOMETiff --|> WarehouseImage
+ImageTIFF --|> WarehouseImage
+TableImageCrops --> TableSourceImages : "source_image_table"
+TableQualityControl --> TableDerivedMeasurement : "optional"
+Warehouse -[hidden]down-> WarehouseManifest
+Warehouse -[hidden]down-> WarehouseCatalog
+WarehouseCatalog -[hidden]down-> Namespace
+WarehouseCatalog -[hidden]down-> CatalogView
+WarehouseManifest -[hidden]down-> WarehouseTable
+WarehouseManifest -[hidden]down-> WarehouseImage
+@enduml

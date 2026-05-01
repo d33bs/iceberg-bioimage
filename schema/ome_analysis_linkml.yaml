@@ -1,0 +1,615 @@
+id: https://w3id.org/ome/analysis
+name: ome_analysis
+title: OME Analysis LinkML Schema
+description: >-
+  A lightweight OME-aligned LinkML schema centered on warehouse manifest and
+  table semantics, with optional analysis extensions. The core model tracks the
+  warehouse specification (namespace-qualified table identifiers, table roles,
+  and join keys) while remaining open to OME/REMBI references.
+
+conforms_to:
+  - OME
+  - REMBI
+
+created_on: "2026-05-01T00:00:00Z"
+last_updated_on: "2026-05-01T00:00:00Z"
+version: v0.1.0
+metamodel_version: v1.0.0
+license: https://opensource.org/license/bsd-3-clause
+
+prefixes:
+  # Canonical vocabulary prefixes
+  linkml: https://w3id.org/linkml/
+  ome: https://ome-model.readthedocs.io/en/stable/
+  rembi: https://doi.org/10.1038/s41592-021-01166-8
+  schema: http://schema.org/
+  prov: http://www.w3.org/ns/prov#
+  dcterms: http://purl.org/dc/terms/
+  # Project-local/module prefix (placeholder)
+  omeana: https://example.org/ome/analysis/
+
+  # Placeholder template examples for project-controlled namespaces:
+  # your_org: https://example.org/<org-or-project>/
+  # your_model: https://example.org/<org-or-project>/<model>/
+  # your_profile: https://example.org/<org-or-project>/<model>/<profile>/
+
+imports:
+  - linkml:types
+  # Future imports once available:
+  # - ome:core
+  # - ome:instrument
+  # - rembi:analyzed_data
+
+default_prefix: omeana
+default_range: string
+
+annotations:
+  authorship_note: >-
+    TODO: add lead author and contributors (for example, name, affiliation,
+    ORCID) before release.
+  module_scope: Bioimage analysis
+  module_scope_note: >-
+    Core scope is warehouse manifest and table-level interoperability metadata.
+    Analysis-stage entities are included as optional extensions.
+  rembi_module_alignment: REMBI_AnalyzedData
+  ome_alignment_note: >-
+    This schema links to OME concepts through references rather than redefining
+    core OME classes.
+  warehouse_alignment_note: >-
+    Core classes intentionally mirror warehouse-spec semantics first:
+    warehouse_spec_version, table identifiers, namespaces, roles, join keys,
+    and table-level metadata.
+  prefix_placeholder_note: >-
+    Replace project-local prefix values that use example.org with stable,
+    resolvable namespaces before release (for example via w3id, purl, or an
+    institutional domain).
+  iceberg_bioimage_profile_note: >-
+    Iceberg-centric concepts in this profile focus on warehouse/table, catalog,
+    and optional view semantics while keeping analytical meaning separate from
+    physical implementation details.
+
+###############################
+# TYPES                       #
+###############################
+types:
+
+  SemVerString:
+    typeof: string
+    description: Semantic version string using MAJOR.MINOR.PATCH.
+    pattern: "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+
+  TableIdentifier:
+    typeof: string
+    description: >-
+      Namespace-qualified table identifier, compatible with Iceberg-style
+      namespace and table naming, for example analysis.cell_measurements.
+    pattern: "^[a-z][a-z0-9_]*(\\.[a-z][a-z0-9_]*)+$"
+
+  URIString:
+    typeof: uri
+    description: URI string.
+
+###############################
+# SLOTS                       #
+###############################
+slots:
+
+  id:
+    description: Identifier for an analysis-module entity.
+    range: uriorcurie
+    identifier: true
+    slot_uri: schema:identifier
+
+  name:
+    description: Human-readable name.
+    range: string
+    slot_uri: schema:name
+
+  description:
+    description: Human-readable description.
+    range: string
+    slot_uri: schema:description
+
+  warehouse_spec_version:
+    description: Version of the warehouse specification implemented by the manifest.
+    range: SemVerString
+
+  rembi_alignment:
+    description: REMBI module or concept that this entity aligns with.
+    range: string
+
+  ome_model_reference:
+    description: Reference to an OME model term, class, or concept.
+    range: uriorcurie
+
+  data_role:
+    description: Analytical role of a data object.
+    range: AnalyzedDataRole
+
+  lifecycle_stage:
+    description: Analysis lifecycle stage represented by this entity.
+    range: LifecycleStage
+
+  data_format:
+    description: Physical or logical data format.
+    range: DataFormat
+
+  format:
+    description: Manifest table format field.
+    range: DataFormat
+
+  role:
+    description: Manifest table role from the controlled vocabulary.
+    range: WarehouseTableRole
+
+  biological_object:
+    description: Biological or analytical object represented by rows or records.
+    range: string
+
+  compartment:
+    description: Biological compartment, region, or context for measurement.
+    range: string
+
+  profile_level:
+    description: Optional profile level label for profile-oriented tables.
+    range: ProfileLevel
+
+  path:
+    description: Filesystem path, URI, repository path, object-storage key, or other locator.
+    range: uriorcurie
+
+  tables:
+    description: Tables declared in the warehouse manifest.
+    range: WarehouseTable
+    multivalued: true
+    inlined: true
+    inlined_as_list: true
+
+  manifest:
+    description: Manifest associated with a warehouse.
+    range: WarehouseManifest
+    inlined: true
+
+  catalogs:
+    description: Catalog definitions associated with the warehouse.
+    range: WarehouseCatalog
+    multivalued: true
+    inlined: true
+    inlined_as_list: true
+
+  manifest_images:
+    description: Image artifacts recorded in the warehouse manifest.
+    range: WarehouseImage
+    multivalued: true
+    inlined: true
+    inlined_as_list: true
+
+  views:
+    description: Optional logical table views defined under a warehouse catalog.
+    range: CatalogView
+    multivalued: true
+    inlined: true
+    inlined_as_list: true
+
+  namespaces:
+    description: Namespaces defined under a warehouse catalog.
+    range: Namespace
+    multivalued: true
+    inlined: true
+    inlined_as_list: true
+
+  warehouse_root:
+    description: Filesystem or object-store root URI for the warehouse.
+    range: uriorcurie
+
+  table_identifier:
+    description: Namespace-qualified table identifier, such as analysis.cell_measurements.
+    range: TableIdentifier
+
+  catalog_name:
+    description: Iceberg or warehouse catalog name.
+    range: string
+
+  namespace:
+    description: Table namespace, such as analysis, measurements, quality_control, or images.
+    range: WarehouseNamespace
+
+  table_name:
+    description: Local table name within a namespace.
+    range: string
+
+  table_prefix:
+    description: >-
+      Short, human-readable prefix indicating table intent/category. This is a
+      naming aid for warehouses and diagrams, for example img, prof, qc, emb,
+      ann, or rpt.
+    range: DataTablePrefix
+
+  source_image_table:
+    description: Source image table that a label table is derived from.
+    range: TableSourceImages
+
+  label_table:
+    description: Label table derived from this source image table.
+    range: TableImageLabel
+
+  source_tables:
+    description: Source tables referenced by a warehouse view.
+    range: WarehouseTable
+    multivalued: true
+
+  view_sql:
+    description: Optional SQL definition for a warehouse view.
+    range: string
+
+  view_images:
+    description: Image artifacts associated with this catalog view.
+    range: WarehouseImage
+    multivalued: true
+    inlined: true
+    inlined_as_list: true
+
+  related_embedding_tables:
+    description: Optional embedding tables associated with a quality-control table.
+    range: TableEmbedding
+    multivalued: true
+
+  related_measurement_tables:
+    description: Optional derived-measurement tables associated with a quality-control table.
+    range: TableDerivedMeasurement
+    multivalued: true
+
+  image_manifest:
+    description: Manifest that records this warehouse image artifact.
+    range: WarehouseManifest
+    inlined: true
+
+  image_views:
+    description: Catalog views that reference this warehouse image artifact.
+    range: CatalogView
+    multivalued: true
+
+###############################
+# CLASSES                     #
+###############################
+classes:
+
+  Warehouse:
+    class_uri: omeana:Warehouse
+    description: Warehouse root entity containing tables and a manifest.
+    slots:
+      - id
+      - name
+      - description
+      - warehouse_root
+      - warehouse_spec_version
+      - manifest
+      - catalogs
+      - rembi_alignment
+      - ome_model_reference
+    extra_slots:
+      allowed: true
+
+  WarehouseImage:
+    class_uri: omeana:WarehouseImage
+    description: Image artifact stored or referenced by the warehouse.
+    slots:
+      - id
+      - name
+      - description
+      - data_format
+      - path
+      - image_manifest
+      - image_views
+      - rembi_alignment
+      - ome_model_reference
+    extra_slots:
+      allowed: true
+
+  ImageOMETiff:
+    is_a: WarehouseImage
+    class_uri: omeana:ImageOMETiff
+    description: Warehouse image artifact stored in OME-TIFF format.
+    slot_usage:
+      data_format:
+        equals_string: ome_tiff
+
+  ImageOMEZarr:
+    is_a: WarehouseImage
+    class_uri: omeana:ImageOMEZarr
+    description: Warehouse image artifact stored in OME-Zarr format.
+    slot_usage:
+      data_format:
+        equals_string: ome_zarr
+
+  ImageTIFF:
+    is_a: WarehouseImage
+    class_uri: omeana:ImageTIFF
+    description: Warehouse image artifact stored in TIFF format.
+    slot_usage:
+      data_format:
+        equals_string: tiff
+
+  WarehouseCatalog:
+    class_uri: omeana:WarehouseCatalog
+    description: Logical catalog context used to organize warehouse tables.
+    slots:
+      - id
+      - name
+      - description
+      - catalog_name
+      - warehouse_root
+      - views
+      - namespaces
+    extra_slots:
+      allowed: true
+
+  Namespace:
+    class_uri: omeana:Namespace
+    description: Generic namespace declaration under a warehouse catalog.
+    slots:
+      - id
+      - name
+      - description
+      - namespace
+      - rembi_alignment
+      - ome_model_reference
+    extra_slots:
+      allowed: true
+
+  CatalogView:
+    class_uri: omeana:CatalogView
+    description: Optional logical view over one or more warehouse tables.
+    slots:
+      - id
+      - name
+      - description
+      - source_tables
+      - view_images
+      - view_sql
+      - rembi_alignment
+      - ome_model_reference
+    extra_slots:
+      allowed: true
+
+  WarehouseManifest:
+    class_uri: omeana:WarehouseManifest
+    description: >-
+      Minimal warehouse-level manifest aligned with the project warehouse
+      specification.
+    slots:
+      - id
+      - name
+      - description
+      - warehouse_root
+      - warehouse_spec_version
+      - tables
+      - manifest_images
+      - rembi_alignment
+      - ome_model_reference
+    extra_slots:
+      allowed: true
+
+  WarehouseTable:
+    class_uri: omeana:WarehouseTable
+    description: Warehouse table declaration aligned with manifest semantics.
+    slots:
+      - table_identifier
+      - namespace
+      - table_name
+      - table_prefix
+      - role
+      - format
+      - biological_object
+      - compartment
+      - profile_level
+      - description
+    extra_slots:
+      allowed: true
+
+  TableImage:
+    is_a: WarehouseTable
+    class_uri: omeana:TableImage
+    description: Base class for all image-namespace warehouse tables.
+    slot_usage:
+      namespace:
+        equals_string: images
+
+  TableImageCrops:
+    is_a: TableImage
+    class_uri: omeana:TableImageCrops
+    description: Canonical per-object image crop table (`images.image_crops`).
+    slots:
+      - source_image_table
+    slot_usage:
+      role:
+        equals_string: image_crops
+      table_name:
+        equals_string: image_crops
+      table_identifier:
+        equals_string: images.image_crops
+
+  TableSourceImages:
+    is_a: TableImage
+    class_uri: omeana:TableSourceImages
+    description: Canonical source image payload table (`images.source_images`).
+    slots:
+      - label_table
+    slot_usage:
+      role:
+        equals_string: source_images
+      table_name:
+        equals_string: source_images
+      table_identifier:
+        equals_string: images.source_images
+
+  TableAnalyze:
+    is_a: WarehouseTable
+    class_uri: omeana:TableAnalyze
+    description: >-
+      Analyzed data represented as a warehouse table, relation, dataframe,
+      view, or queryable dataset.
+    slot_usage:
+      namespace:
+        equals_string: analysis
+    slots:
+      - id
+      - name
+      - data_role
+      - lifecycle_stage
+      - data_format
+      - rembi_alignment
+      - ome_model_reference
+      - table_identifier
+      - biological_object
+      - compartment
+
+  TableDerivedMeasurement:
+    is_a: TableAnalyze
+    class_uri: omeana:TableDerivedMeasurement
+    description: Tabular measurements derived from images, objects, regions, samples, or datasets.
+    slot_usage:
+      data_role:
+        equals_string: feature_measurements
+
+  TableQualityControl:
+    is_a: TableAnalyze
+    class_uri: omeana:TableQualityControl
+    description: Tabular quality-control outputs used to assess or filter bioimage-derived data.
+    slots:
+      - related_embedding_tables
+      - related_measurement_tables
+    slot_usage:
+      data_role:
+        equals_string: quality_control
+      lifecycle_stage:
+        equals_string: quality_control
+
+  TableImageLabel:
+    is_a: TableImage
+    class_uri: omeana:TableImageLabel
+    description: Label table derived from source images and linked to source image tables.
+    slots:
+      - data_role
+      - lifecycle_stage
+      - data_format
+      - rembi_alignment
+      - ome_model_reference
+      - source_image_table
+    slot_usage:
+      data_role:
+        equals_string: segmentation_mask
+      lifecycle_stage:
+        equals_string: segmentation
+
+  TableEmbedding:
+    is_a: TableAnalyze
+    class_uri: omeana:TableEmbedding
+    description: Latent representations derived from images, measurements, or models.
+    slot_usage:
+      data_role:
+        equals_string: embedding
+
+###############################
+# ENUMS                       #
+###############################
+enums:
+
+  WarehouseNamespace:
+    description: Named namespaces for image and analysis domain tables.
+    permissible_values:
+      images:
+      analysis:
+      profiles:
+      quality_control:
+      embeddings:
+      annotations:
+      reports:
+      other:
+
+  DataTablePrefix:
+    description: Suggested short prefixes to clarify data-table intent.
+    permissible_values:
+      img:
+      prof:
+      qc:
+      emb:
+      ann:
+      rpt:
+      other:
+
+  WarehouseTableRole:
+    description: Table role vocabulary aligned with warehouse specification.
+    permissible_values:
+      profiles:
+      joined_profiles:
+      quality_control:
+      image_crops:
+      source_images:
+      image_metadata:
+      chunk_metadata:
+      embeddings:
+      annotations:
+      reports:
+      other:
+
+  ProfileLevel:
+    description: Optional analysis/profile level label for profile tables.
+    permissible_values:
+      organoid:
+      image:
+      object:
+      other:
+
+  LifecycleStage:
+    description: Analysis lifecycle stage.
+    permissible_values:
+      acquisition:
+      storage:
+      metadata_capture:
+      preprocessing:
+      segmentation:
+      feature_extraction:
+      quality_control:
+      normalization:
+      profiling:
+      modeling:
+      analysis:
+      reporting:
+      publication:
+      other:
+
+  AnalyzedDataRole:
+    description: Role of an analyzed-data object.
+    permissible_values:
+      processed_image:
+      segmentation_mask:
+      object_measurements:
+      feature_measurements:
+      joined_measurements:
+      normalized_measurements:
+      embedding:
+      annotation_table:
+      quality_control:
+      analysis_report:
+      model_output:
+      provenance_record:
+      other:
+
+  DataFormat:
+    description: Physical or logical data format.
+    permissible_values:
+      iceberg:
+      parquet:
+      arrow:
+      ome_zarr:
+      ome_tiff:
+      tiff:
+      zarr:
+      csv:
+      json:
+      notebook:
+      container_image:
+      workflow:
+      report:
+      other:

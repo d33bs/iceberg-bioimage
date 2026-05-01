@@ -8,6 +8,7 @@ Use this table to pick the first workflow:
 | -------------------------------------------------------------------- | ------------------------------------------------------------ | ----------------------- |
 | Build a Cytomining Parquet warehouse from image files                | `export-cytomining` / `export_store_to_cytomining_warehouse` | No                      |
 | Validate profile schemas and join keys                               | `validate-contract` / `validate_microscopy_profile_table`    | No                      |
+| Validate warehouse manifest and layout conformance                   | `validate-warehouse` / `validate_warehouse_manifest`         | No                      |
 | Publish canonical metadata to Iceberg tables                         | `register`, `ingest`, `publish-chunks`                       | Yes                     |
 | Read canonical metadata from Iceberg and export to Parquet warehouse | `export-cytomining-catalog`                                  | Yes                     |
 
@@ -48,6 +49,7 @@ Validate a profile table join contract:
 
 ```bash
 iceberg-bioimage validate-contract data/profiles.parquet
+iceberg-bioimage validate-warehouse warehouse-root
 ```
 
 ## Catalog-Backed Path
