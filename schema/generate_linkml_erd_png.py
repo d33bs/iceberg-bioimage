@@ -254,19 +254,27 @@ def build_presentation_plantuml(schema_path: Path) -> str:  # noqa: C901, PLR091
         "hide methods",
         "hide stereotypes",
         "",
-        'package "Core Warehouse" {',
+        'package "Warehouse Domain" {',
     ]
+    lines.append('package "Warehouse Core" {')
     for cls in [
         "Warehouse",
         "WarehouseManifest",
         "WarehouseCatalog",
         "Namespace",
         "CatalogView",
+    ]:
+        if cls in class_names:
+            lines.append(f"class {cls}")
+    lines.append("}")
+    lines.append('package "Warehouse Assets" {')
+    for cls in [
         "WarehouseTable",
         "WarehouseImage",
     ]:
         if cls in class_names:
             lines.append(f"class {cls}")
+    lines.append("}")
     lines.append("}")
     lines.append("")
     lines.append('package "Images Namespace" {')
@@ -287,6 +295,7 @@ def build_presentation_plantuml(schema_path: Path) -> str:  # noqa: C901, PLR091
     lines.append("}")
     lines.append("}")
     lines.append("")
+    lines.append('package "Analysis Namespace" {')
     lines.append('package "Analysis Tables" {')
     for cls in [
         "TableAnalyze",
@@ -296,6 +305,7 @@ def build_presentation_plantuml(schema_path: Path) -> str:  # noqa: C901, PLR091
     ]:
         if cls in class_names:
             lines.append(f"class {cls}")
+    lines.append("}")
     lines.append("}")
     lines.append("")
 

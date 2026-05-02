@@ -1,3 +1,4 @@
+---
 id: https://w3id.org/ome/analysis
 name: ome_analysis
 title: OME Analysis LinkML Schema
@@ -111,7 +112,8 @@ slots:
     slot_uri: schema:description
 
   warehouse_spec_version:
-    description: Version of the warehouse specification implemented by the manifest.
+    description: >-
+      Version of the warehouse specification implemented by the manifest.
     range: SemVerString
 
   rembi_alignment:
@@ -155,7 +157,9 @@ slots:
     range: ProfileLevel
 
   path:
-    description: Filesystem path, URI, repository path, object-storage key, or other locator.
+    description: >-
+      Filesystem path, URI, repository path, object-storage key, or other
+      locator.
     range: uriorcurie
 
   tables:
@@ -203,7 +207,9 @@ slots:
     range: uriorcurie
 
   table_identifier:
-    description: Namespace-qualified table identifier, such as analysis.cell_measurements.
+    description: >-
+      Namespace-qualified table identifier, such as
+      analysis.cell_measurements.
     range: TableIdentifier
 
   catalog_name:
@@ -211,7 +217,9 @@ slots:
     range: string
 
   namespace:
-    description: Table namespace, such as analysis, measurements, quality_control, or images.
+    description: >-
+      Table namespace, such as analysis, measurements, quality_control, or
+      images.
     range: WarehouseNamespace
 
   table_name:
@@ -250,12 +258,15 @@ slots:
     inlined_as_list: true
 
   related_embedding_tables:
-    description: Optional embedding tables associated with a quality-control table.
+    description: >-
+      Optional embedding tables associated with a quality-control table.
     range: TableEmbedding
     multivalued: true
 
   related_measurement_tables:
-    description: Optional derived-measurement tables associated with a quality-control table.
+    description: >-
+      Optional derived-measurement tables associated with a quality-control
+      table.
     range: TableDerivedMeasurement
     multivalued: true
 
@@ -467,7 +478,9 @@ classes:
   TableDerivedMeasurement:
     is_a: TableAnalyze
     class_uri: omeana:TableDerivedMeasurement
-    description: Tabular measurements derived from images, objects, regions, samples, or datasets.
+    description: >-
+      Tabular measurements derived from images, objects, regions, samples, or
+      datasets.
     slot_usage:
       data_role:
         equals_string: feature_measurements
@@ -475,7 +488,9 @@ classes:
   TableQualityControl:
     is_a: TableAnalyze
     class_uri: omeana:TableQualityControl
-    description: Tabular quality-control outputs used to assess or filter bioimage-derived data.
+    description: >-
+      Tabular quality-control outputs used to assess or filter
+      bioimage-derived data.
     slots:
       - related_embedding_tables
       - related_measurement_tables
@@ -488,7 +503,9 @@ classes:
   TableImageLabel:
     is_a: TableImage
     class_uri: omeana:TableImageLabel
-    description: Label table derived from source images and linked to source image tables.
+    description: >-
+      Label table derived from source images and linked to source image
+      tables.
     slots:
       - data_role
       - lifecycle_stage
@@ -505,7 +522,8 @@ classes:
   TableEmbedding:
     is_a: TableAnalyze
     class_uri: omeana:TableEmbedding
-    description: Latent representations derived from images, measurements, or models.
+    description: >-
+      Latent representations derived from images, measurements, or models.
     slot_usage:
       data_role:
         equals_string: embedding

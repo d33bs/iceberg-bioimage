@@ -5,14 +5,18 @@ skinparam classAttributeIconSize 0
 hide methods
 hide stereotypes
 
-package "Core Warehouse" {
+package "Warehouse Domain" {
+package "Warehouse Core" {
 class Warehouse
 class WarehouseManifest
 class WarehouseCatalog
 class Namespace
 class CatalogView
+}
+package "Warehouse Assets" {
 class WarehouseTable
 class WarehouseImage
+}
 }
 
 package "Images Namespace" {
@@ -29,11 +33,13 @@ class TableImageLabel
 }
 }
 
+package "Analysis Namespace" {
 package "Analysis Tables" {
 class TableAnalyze
 class TableDerivedMeasurement
 class TableQualityControl
 class TableEmbedding
+}
 }
 
 Warehouse --> WarehouseManifest : "manifest"
